@@ -4,11 +4,31 @@ import (
 	"flag"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
 	"path/filepath"
 )
 
 var kubeconfig *string
+
+func K8SAuth() *kubernetes.Clientset {
+
+	kuberconfig := getKubeconfig()
+
+	config, err := clientcmd.BuildConfigFromFlags("", *kuberconfig)
+	if err != nil {
+		clientset := inClusterAuth()
+		return clientset
+	}
+
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		clientset := inClusterAuth()
+		return clientset
+	}
+	return clientset
+
+}
 
 func init() {
 	if home := homedir.HomeDir(); home != "" {
@@ -19,7 +39,7 @@ func init() {
 	flag.Parse()
 }
 
-func GetKubeconfig() *string {
+func getKubeconfig() *string {
 	return kubeconfig
 }
 
